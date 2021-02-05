@@ -3,32 +3,34 @@
 #include <string.h>
 #include <strings.h>
 
+#define LINESIZE 1024
 
 struct pixelP3 {
-	int r, g, b;
+	int r;
+	int g;
+	int b;
 };
 
 struct pixelP6 {
-	unsigned char charR, charG, charB;
+	unsigned char charR;
+	unsigned char charG;
+	unsigned char charB;
 };
 
-struct imagem {
+struct Timagem {
 	char formato[3];
 	int largura;
 	int altura;
 	int valorMax;
-	struct pixelP3 *pixels;
+	struct pixelP3 *imagem;
 	int mediaR;
 	int mediaG;
 	int mediaB;
 };
 
 
-struct imagem leImagem(FILE* arq);
+struct pixelP3 *alocaImagem(int largura, int altura);
 
-void retiraComentarios(FILE* arq);
+struct Timagem *leImagem(FILE* arq);
 
-void mostraArquivo(FILE* arq);
-
-void ignoraLinhaEmBranco(FILE* arq);
-
+void calculaMediaPixels(struct Timagem *pastilha);

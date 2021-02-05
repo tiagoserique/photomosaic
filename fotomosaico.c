@@ -1,90 +1,123 @@
+
 #include "fotomosaico.h"
 
-struct imagem leImagem(FILE* arq){
-	
-	struct imagem pastilha;
-	int ret;
-	
-	retiraComentarios(arq);
 
-	fscanf(arq, "%s", pastilha.formato);
-	if ( !strcpy(pastilha.formato, "P3") ){
+struct pixelP3 *alocaImagem(int largura, int altura){
+	struct pixelP3 *temp;
+
+	temp = malloc(sizeof(struct pixelP3) * largura * altura);
+	
+	return temp;						
+}
+
+
+struct Timagem *leImagem(FILE* arq){
+	int ret, i;
+	char line[LINESIZE+1];
+	struct Timagem *pastilha = malloc(sizeof(struct Timagem));;
+	
+/*============================================================================*/
+
+	// ignora as linhas em branco ou comentadas
+	fgets(line, LINESIZE, arq);
+	while(line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+		fgets(line, LINESIZE, arq);
+	};
+
+	// le o formato do arquivo
+	ret = sscanf(line, "%s", pastilha->formato);
+	if (ret != 1){
 		perror("Formato errado");
 		fclose(arq);
 		exit(1);
 	}
-	printf("Formato: %s\n", pastilha.formato);
+	printf("Formato: %s\n", pastilha->formato);
 
-	ignoraLinhaEmBranco(arq);
 
-	ret = fscanf(arq, "%d %d", &pastilha.largura, &pastilha.altura);
+/*============================================================================*/
+
+	// ignora as linhas em branco ou comentadas
+	fgets(line, LINESIZE, arq);
+	while(line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+		fgets(line, LINESIZE, arq);
+	};
+
+	// le as dimensoes da imagem
+	ret = sscanf(line, "%d %d", &pastilha->largura, &pastilha->altura);
 	if (ret != 2){
+		printf("%d", ret);
 		perror("Erro ao pegar tamanho da imagem");
 		fclose(arq);
 		exit(1);
 	}
-	printf("Largura: %d, Altura: %d\n", pastilha.largura, pastilha.altura);
+	printf("Largura: %d, Altura: %d\n", pastilha->largura, pastilha->altura);
 
-	ret = fscanf(arq, "%d", &pastilha.valorMax);
-	if ( ret != 1){
+
+/*============================================================================*/
+	
+	// ignora as linhas em branco ou comentadas
+	fgets(line, LINESIZE, arq);
+	while( line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+		fgets(line, LINESIZE, arq);
+	};
+
+	// le o valor maximo dos pixels
+	ret = sscanf(line, "%d", &pastilha->valorMax);
+	if ( ret != 1 ){
 		perror("Erro ao pegar valor maximo dos componentes");
 		exit(1);
 	}
-	printf("Valor maximo cor: %d\n", pastilha.valorMax);
+	printf("Valor maximo cor: %d\n", pastilha->valorMax);
 
-	// mostraArquivo(arq);
 
-	pastilha.pixels = (struct pixelP3 *)malloc(sizeof(struct pixelP3) * 
-						pastilha.largura * pastilha.altura);
-	
-	if ( !pastilha.pixels ){
+/*============================================================================*/
+
+	// Warning: Caso tenha comentarios apos o valor maximo havera um erro na
+	// leitura da imagem
+
+	pastilha->imagem = alocaImagem(pastilha->largura, pastilha->altura);
+	if ( !pastilha->imagem ){
 		perror("Erro ao alocar memoria");
 		fclose(arq);
 		exit(1);
 	}
 
-	for (int i = 0; i < (pastilha.largura * pastilha.altura); i++){
-		fscanf(arq, "%d ", &pastilha.pixels[i].r);
-		fscanf(arq, "%d ", &pastilha.pixels[i].g);
-		fscanf(arq, "%d ", &pastilha.pixels[i].b);
+	if (!strcmp(pastilha->formato, "P3")){
+
+		for (i = 0; i < (pastilha->largura * pastilha->altura); i++){
+			fscanf(arq, "%d ", &pastilha->imagem[i].r);
+			fscanf(arq, "%d ", &pastilha->imagem[i].g);
+			fscanf(arq, "%d ", &pastilha->imagem[i].b);
+		}
+		calculaMediaPixels(pastilha);
+
+		printf("Media R: %d, G: %d, B: %d\n", pastilha->mediaR, pastilha->mediaG, 
+			pastilha->mediaB);
 	}
+	
 
 	fclose(arq);
+
 	return pastilha;
 }
 
 
-// Varre o arquivo por procurando "#" e substitui por '\0'
-void retiraComentarios(FILE* arq){
-	char line[20];
+void calculaMediaPixels(struct Timagem *pastilha){
+	int i, tamVetor;
 
-	fgets(line, 20, arq);
-	while ( ! feof(arq) ){
-		line[strcspn(line, "#")] = '\0' ;
-		fgets(line, 20, arq);
+	tamVetor = pastilha->altura * pastilha->largura;
+
+	for (i = 0; i < tamVetor; i++){
+		pastilha->mediaR += pastilha->imagem[i].r;
+		pastilha->mediaG += pastilha->imagem[i].g;
+		pastilha->mediaB += pastilha->imagem[i].b;
 	}
-	rewind(arq);
+
+	pastilha->mediaR /= tamVetor;
+	pastilha->mediaG /= tamVetor;
+	pastilha->mediaB /= tamVetor;
 }
 
 
-void mostraArquivo(FILE* arq){
-	char line[1024];
-
-	fgets(line, 1024, arq);
-	while( !feof(arq) ){
-		printf("%s\n", line);		
-		fgets(line, 1024, arq);
-	}
-}
-
-
-void ignoraLinhaEmBranco(FILE* arq){
-	char line[20];
-	
-	fgets(line, 20, arq);
-	while( line[0] == '\0' || !strcmp(line,"\n")){
-		fgets(line, 20, arq);
-	};
-}
 
 

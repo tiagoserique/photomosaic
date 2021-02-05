@@ -3,7 +3,6 @@
 #define LINESIZE 1024
 
 int main(int argc, char *argv[]){
-
 	FILE* arq;
 
 	arq = fopen("flower.ppm", "r");
