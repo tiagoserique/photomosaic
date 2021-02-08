@@ -1,2 +1,2 @@
 # fotomosaico
-Cria um mozaico com fotos em formato PPM
+Cria um mosaico com fotos em formato PPM
