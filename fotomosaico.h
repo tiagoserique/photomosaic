@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <ctype.h>
+#include <unistd.h>
 
 #define LINESIZE 1024
+#define MAXVALUERGB 255
 
 struct pixelP3 {
 	int r;
@@ -29,8 +34,10 @@ struct Timagem {
 };
 
 
-struct pixelP3 *alocaImagem(int largura, int altura);
+struct pixelP3 *alocaImagemP3(int largura, int altura);
 
-struct Timagem *leImagem(FILE* arq);
+struct pixelP6 *alocaImagemP6(int largura, int altura);
+
+struct Timagem *leImagem();
 
 void calculaMediaPixels(struct Timagem *pastilha);
