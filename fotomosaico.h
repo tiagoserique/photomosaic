@@ -41,3 +41,5 @@ struct pixelP6 *alocaImagemP6(int largura, int altura);
 struct Timagem *leImagem();
 
 void calculaMediaPixels(struct Timagem *pastilha);
+
+void escreveImagem(struct Timagem *pastilha, char *saida);

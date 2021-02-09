@@ -29,7 +29,7 @@ struct Timagem *leImagem(){
 /*============================================================================*/
 
 	// 
-	arq = fopen("teste2.ppm", "r");
+	arq = fopen("flower.ppm", "r");
 	if ( !arq ){
 		fprintf(stderr, "Erro ao abrir arquivo");
 		exit(1);
@@ -99,16 +99,13 @@ struct Timagem *leImagem(){
 	}
 
 	if (!strcmp(pastilha->formato, "P3")){
-
 		for (i = 0; i < (pastilha->largura * pastilha->altura); i++){
 			fscanf(arq, "%d ", &pastilha->imagem[i].r);
 			fscanf(arq, "%d ", &pastilha->imagem[i].g);
 			fscanf(arq, "%d ", &pastilha->imagem[i].b);
 		}
-		
 	}
 	else if (!strcmp(pastilha->formato, "P6")){
-
 		struct pixelP6 *temp = alocaImagemP6(pastilha->largura, pastilha->altura);
 
 		ret = fread(temp, 3 * pastilha->largura, pastilha->altura, arq);
@@ -156,5 +153,48 @@ void calculaMediaPixels(struct Timagem *pastilha){
 }
 
 
+void escreveImagem(struct Timagem *pastilha, char *saida){
+	FILE* arq;
+	int ret, tamanho, i, j;
+
+	arq = fopen(saida, "w+");
+	if (!arq){
+		fprintf(stderr, "Erro ao salvar mosaico");
+		exit(0);
+	}
+
+	fputs(pastilha->formato, arq);
+	fputs("\n", arq);
+	fprintf(arq, "%d %d\n", pastilha->largura, pastilha->altura);
+	fprintf(arq, "%d\n", pastilha->valorMax);
+
+	if (!strcmp(pastilha->formato, "P3")){
+		tamanho = pastilha->altura * pastilha->largura * 3;
+
+		// escreve os valores gerados no final do arquivo
+		for (i = 0; i < (pastilha->altura); i++){
+			int indice = i * pastilha->altura; 
+			int largura = pastilha->largura + indice;
+			for (j = indice; j < largura; j++){
+				fprintf(arq, "%d ", pastilha->imagem[j].r);
+				fprintf(arq, "%d ", pastilha->imagem[j].g);
+				fprintf(arq, "%d ", pastilha->imagem[j].b);
+			}
+			fputs("\n", arq);
+		}
+	}
+	else if (!strcmp(pastilha->formato, "P6")){
+		tamanho = pastilha->altura * pastilha->largura * 3;
+
+		// escreve os valores gerados no final do arquivo
+		ret = fwrite(pastilha->imagem, sizeof(int), tamanho, arq);
+		if (ret)
+			printf ("Gravou %d valores com sucesso!\n", ret) ;
+		else
+			printf ("Erro ao gravar...\n") ;
+	}
+
+	fclose(arq);
+}
 
 

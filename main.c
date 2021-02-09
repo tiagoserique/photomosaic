@@ -12,7 +12,7 @@ int main(int argc, char **argv){
 	opterr = 0;
 
 
-	while ((opcao = getopt (argc, argv, "i:o:p:h::")) != -1)
+	while ((opcao = getopt (argc, argv, "i:o:p:h::")) != -1){
 		switch (opcao){
 			case 'i':
 				input = optarg;
@@ -47,14 +47,15 @@ int main(int argc, char **argv){
 			default:
 				abort ();
 		}
-
+	}
 
 	printf ("input = %s\n output = %s\n diretorio = %s\n", input, output, diretorio);
 
 	for (index = optind; index < argc; index++)
 	printf ("Non-option argument %s\n", argv[index]);
 
-
+	
+	escreveImagem(leImagem(), output);
 
 
 	// DIR *dirstream;
