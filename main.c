@@ -14,6 +14,7 @@ int main(int argc, char **argv){
 	char *diretorioPastilhas			= "./tiles/";
 	char diretorioInicial[SIZE];
 	
+	int contPastilha					= 0;
 	int opcao							= 0;
 	int qtdImagens						= 0;
 	int ret								= 0;
@@ -73,11 +74,6 @@ int main(int argc, char **argv){
 	}
 
 
-	// 
-	imagemPrincipal = leImagem(input);
-	fclose(input);
-
-
 	// pega o diretorio inicial em que o programa esta rodando
 	getcwd(diretorioInicial, sizeof(diretorioInicial));
 
@@ -91,12 +87,14 @@ int main(int argc, char **argv){
 
 
 	// escaneia diretorio atras de imagens .ppm 
-	// e coloca os nomes em nomesImagem 
+	// e coloca os nomes em nomesImagem
+	fprintf(stderr, "Reading tiles from %s\n", diretorioPastilhas);
 	qtdImagens = scandir(".", &nomesImagem, filtro, alphasort);
 	if (qtdImagens < 0){
      	fprintf(stderr, "Nao ha imagens .ppm neste diretorio\n");
 		exit(1);
 	}
+	fprintf(stderr, "%i tiles read\n", qtdImagens);
 
 
 	// aloca vetor de ponteiros para as pastilhas que serao lidas
@@ -106,8 +104,7 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 
-
-	for (int i = 0; i < qtdImagens; i++){
+	for (int i = 0; i < qtdImagens; i++, contPastilha++){
 		// abre a pastilha
 		tempPastilha = fopen(nomesImagem[i]->d_name, "r");
 		if (!tempPastilha){
@@ -116,16 +113,23 @@ int main(int argc, char **argv){
 		}
 
 		// recebe ponteiro apos pastilha ser alocada 
-		vetPastilha[i] = leImagem(tempPastilha);
+		vetPastilha[contPastilha] = leImagem(tempPastilha);
 		// verifica se foi retornado NULL
 		if (!vetPastilha[i])
-			i--;
+			contPastilha--;
 		
+		if (contPastilha == 0){
+			fprintf(stderr, "Tile size is %ix%i\n", vetPastilha[0]->largura, 
+					vetPastilha[0]->altura);
+			fprintf(stderr, "Calculating tiles' average colors\n");
+		}
+
 		// fecha a pastilha
 		fclose(tempPastilha);
 
 		// libera memoria da string com nome do arquivo apos usado
 		free(nomesImagem[i]);
+
 	}
 	// libera memoria do vetor de strings
 	free(nomesImagem);
@@ -139,13 +143,25 @@ int main(int argc, char **argv){
 	}
 
 
+	// 
+	fprintf(stderr, "Reading input image\n");
+	imagemPrincipal = leImagem(input);
+	fclose(input);
+	fprintf(stderr, "Input image PPM %s, %ix%i pixels\n", imagemPrincipal->formato, 
+			imagemPrincipal->largura, imagemPrincipal->altura);
+
+
+	fprintf(stderr, "Building mosaic image\n");
+	
+	
+	fprintf(stderr, "Writing output file\n");
+
+
 	for (int i = 0; i < qtdImagens; i++)
 		desalocaImagem(vetPastilha[i]);
 	free(vetPastilha);
 
-
 	desalocaImagem(imagemPrincipal);
-
 
 	fclose(output);
 	exit(0);
