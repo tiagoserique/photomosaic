@@ -1,10 +1,13 @@
 
 CFLAGS = -Wall
+LIBS = -lm
 
 objects = main.o fotomosaico.o
 
+all: mosaico
+
 mosaico: $(objects)
-	gcc $(objects) -o mosaico
+	gcc $(objects) -o mosaico $(LIBS)
 
 main.o: main.c
 	gcc -c main.c $(CFLAGS)
