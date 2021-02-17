@@ -145,14 +145,14 @@ void calculaMediaPixels(struct Timagem *pastilha){
 	tamanho = pastilha->altura * pastilha->largura;
 
 	for (i = 0; i < tamanho; i++){
-		pastilha->mediaR += pastilha->imagem[i].r;
-		pastilha->mediaG += pastilha->imagem[i].g;
-		pastilha->mediaB += pastilha->imagem[i].b;
+		pastilha->mediaR += pastilha->imagem[i].r * pastilha->imagem[i].r;
+		pastilha->mediaG += pastilha->imagem[i].g * pastilha->imagem[i].g;
+		pastilha->mediaB += pastilha->imagem[i].b * pastilha->imagem[i].b;
 	}
 
-	pastilha->mediaR /= tamanho;
-	pastilha->mediaG /= tamanho;
-	pastilha->mediaB /= tamanho;
+	pastilha->mediaR = sqrt(pastilha->imagem[i].r / tamanho);
+	pastilha->mediaG = sqrt(pastilha->imagem[i].g / tamanho);
+	pastilha->mediaB = sqrt(pastilha->imagem[i].b / tamanho);
 }
 
 
