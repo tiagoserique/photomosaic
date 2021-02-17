@@ -98,7 +98,7 @@ int main(int argc, char **argv){
 
 
 	// aloca vetor de ponteiros para as pastilhas que serao lidas
-	vetPastilha = malloc(sizeof(struct Timagem*) * qtdImagens); //erro aq
+	vetPastilha = malloc(sizeof(struct Timagem*) * qtdImagens);
 	if (!vetPastilha){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
 		exit(1);
@@ -143,20 +143,24 @@ int main(int argc, char **argv){
 	}
 
 
-	// 
+	// le as propriedades da imagem de entrada
 	fprintf(stderr, "Reading input image\n");
 	imagemPrincipal = leImagem(input);
 	fclose(input);
 	fprintf(stderr, "Input image PPM %s, %ix%i pixels\n", imagemPrincipal->formato, 
-			imagemPrincipal->largura, imagemPrincipal->altura);
+		imagemPrincipal->largura, imagemPrincipal->altura);
 
 
+	// constroi o mosaico
 	fprintf(stderr, "Building mosaic image\n");
 	
 	
+	// escreve o resultado no arquivo de saida 
 	fprintf(stderr, "Writing output file\n");
+	escreveImagem(imagemPrincipal, output);
 
 
+	// 
 	for (int i = 0; i < qtdImagens; i++)
 		desalocaImagem(vetPastilha[i]);
 	free(vetPastilha);

@@ -10,7 +10,7 @@
 #include <math.h>
 
 #define SIZE 1024
-#define MAXVALUERGB 255
+#define MAXRGB 255
 
 struct pixelP3 {
 	int r;

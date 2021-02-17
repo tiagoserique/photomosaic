@@ -3,17 +3,17 @@
 
 
 struct pixelP3 *alocaImagemP3(int largura, int altura){
-	return malloc(sizeof(struct pixelP3) * largura * altura);
+	return (struct pixelP3 *)malloc(sizeof(struct pixelP3) * largura * altura);
 }
 
 
 struct pixelP6 *alocaImagemP6(int largura, int altura){
-	return malloc(sizeof(struct pixelP6) * largura * altura);
+	return (struct pixelP6 *)malloc(sizeof(struct pixelP6) * (largura * altura + 1));
 }
 
 
 struct Timagem *alocaVetorPastilhas(int qtdImagens){
-	return malloc(sizeof(struct Timagem*) * qtdImagens);
+	return (struct Timagem *)malloc(sizeof(struct Timagem*) * qtdImagens);
 }
 
 
@@ -26,7 +26,7 @@ void desalocaImagem(struct Timagem *imagem){
 struct Timagem *leImagem(FILE* arq){
 	char line[SIZE+1];
 	
-	int ret, i;
+	int ret, i, tamanho;
 	
 	struct Timagem *pastilha = malloc(sizeof(struct Timagem));
 	if (!pastilha){
@@ -81,9 +81,13 @@ struct Timagem *leImagem(FILE* arq){
 		fprintf(stderr, "Erro ao pegar valor maximo dos componentes\n");
 		exit(1);
 	}
+	if ( pastilha->valorMax != MAXRGB){
+		fprintf(stderr, "Valor maximo diferente de 255\n");
+		exit(1);
+	}
 
 
-	// Warning: Caso tenha comentarios apos o valor maximo havera um erro na
+	// Caso tenha comentarios apos o valor maximo havera um erro na
 	// leitura da imagem
 
 	pastilha->imagem = alocaImagemP3(pastilha->largura, pastilha->altura);
@@ -94,7 +98,9 @@ struct Timagem *leImagem(FILE* arq){
 	}
 
 	if (!strcmp(pastilha->formato, "P3")){
-		for (i = 0; i < (pastilha->largura * pastilha->altura); i++){
+		tamanho = pastilha->largura * pastilha->altura;
+		
+		for (i = 0; i < tamanho; i++){
 			fscanf(arq, "%d ", &pastilha->imagem[i].r);
 			fscanf(arq, "%d ", &pastilha->imagem[i].g);
 			fscanf(arq, "%d ", &pastilha->imagem[i].b);
@@ -102,23 +108,26 @@ struct Timagem *leImagem(FILE* arq){
 	}
 	else if (!strcmp(pastilha->formato, "P6")){
 		struct pixelP6 *temp = alocaImagemP6(pastilha->largura, pastilha->altura);
+		
+		tamanho = pastilha->largura * pastilha->altura;
+		
 		if (!temp){
 			fprintf(stderr, "Nao foi possivel alocar memoria\n");
 			exit(1);
 		}
 
-		ret = fread(temp, 3 * pastilha->largura, pastilha->altura, arq);
+		ret = fread(temp, sizeof(struct pixelP6), tamanho + 1, arq);
 		
-		if ( ret != pastilha->altura ){
-			fprintf(stderr, "Erro fazer leitura dos dados\n");
+		if ( ret != tamanho ){
+			fprintf(stderr, "Erro fazer leitura dos dados: %d\n", ret);
 			fclose(arq);
 			exit(1);
 		}
 
-		for (i = 0; i < (pastilha->largura * pastilha->altura); i++){
-			pastilha->imagem[i].r = (int)temp->charR;
-			pastilha->imagem[i].g = (int)temp->charG;
-			pastilha->imagem[i].b = (int)temp->charB;
+		for (i = 0; i < tamanho; i++){
+			pastilha->imagem[i].r = (int)temp[i].charR;
+			pastilha->imagem[i].g = (int)temp[i].charG;
+			pastilha->imagem[i].b = (int)temp[i].charB;
 		}
 
 		free(temp);
@@ -131,24 +140,24 @@ struct Timagem *leImagem(FILE* arq){
 
 
 void calculaMediaPixels(struct Timagem *pastilha){
-	int i, tamVetor;
+	int i, tamanho;
 
-	tamVetor = pastilha->altura * pastilha->largura;
+	tamanho = pastilha->altura * pastilha->largura;
 
-	for (i = 0; i < tamVetor; i++){
+	for (i = 0; i < tamanho; i++){
 		pastilha->mediaR += pastilha->imagem[i].r;
 		pastilha->mediaG += pastilha->imagem[i].g;
 		pastilha->mediaB += pastilha->imagem[i].b;
 	}
 
-	pastilha->mediaR /= tamVetor;
-	pastilha->mediaG /= tamVetor;
-	pastilha->mediaB /= tamVetor;
+	pastilha->mediaR /= tamanho;
+	pastilha->mediaG /= tamanho;
+	pastilha->mediaB /= tamanho;
 }
 
 
 void escreveImagem(struct Timagem *pastilha, FILE* output){
-	int ret, tamanho, i, j;
+	int tamanho, i;
 
 	fputs(pastilha->formato, output);
 	fputs("\n", output);
@@ -156,31 +165,36 @@ void escreveImagem(struct Timagem *pastilha, FILE* output){
 	fprintf(output, "%d\n", pastilha->valorMax);
 
 	if (!strcmp(pastilha->formato, "P3")){
-		tamanho = pastilha->altura * pastilha->largura * 3;
+		tamanho = pastilha->altura * pastilha->largura;
 
 		// escreve os valores gerados no final do arquivo
-		for (i = 0; i < (pastilha->altura); i++){
-			int indice 	= i * pastilha->altura; 
-			int largura = pastilha->largura + indice;
-			
-			for (j = indice; j < largura; j++){
-				fprintf(output, "%d ", pastilha->imagem[j].r);
-				fprintf(output, "%d ", pastilha->imagem[j].g);
-				fprintf(output, "%d ", pastilha->imagem[j].b);
-			}
-
-			fputs("\n", output);
+		for (i = 0; i < tamanho; i++){
+			fprintf(output, "%d ", pastilha->imagem[i].r);
+			fprintf(output, "%d ", pastilha->imagem[i].g);
+			fprintf(output, "%d ", pastilha->imagem[i].b);
 		}
 	}
 	else if (!strcmp(pastilha->formato, "P6")){
-		tamanho = pastilha->altura * pastilha->largura * 3;
+		struct pixelP6 *temp = alocaImagemP6(pastilha->largura, pastilha->altura);
+		int ret;
+		tamanho = pastilha->altura * pastilha->largura;
 
 		// escreve os valores gerados no final do arquivo
-		ret = fwrite(pastilha->imagem, sizeof(int), tamanho, output);
-		if (!ret){
-			fprintf(stderr, "Erro ao gravar...\n");
+		for (i = 0; i < tamanho; i++){
+			temp[i].charR = (unsigned char)pastilha->imagem[i].r;
+			temp[i].charG = (unsigned char)pastilha->imagem[i].g;
+			temp[i].charB = (unsigned char)pastilha->imagem[i].b;
+		}
+
+		ret = fwrite(temp, sizeof(struct pixelP6), tamanho, output);
+
+		if ( ret != tamanho ){
+			fprintf(stderr, "Erro fazer leitura dos dados: %d\n", ret);
+			fclose(output);
 			exit(1);
 		}
+
+		free(temp);
 	}
 }
 
@@ -203,19 +217,18 @@ float calculaDistancia(struct Timagem *imagem1, struct Timagem *imagem2){
 int filtro(const struct dirent *dir){
 	int tamanho = strlen(dir->d_name);
 
-	if ( tamanho < 1 )
+	if (tamanho < 1)
 		return 0;
 
-	if ( dir->d_type != DT_REG )
+	if (dir->d_type != DT_REG)
 		return 0;
 	
 	if ( dir->d_name[tamanho - 4] == '.' && dir->d_name[tamanho - 3] == 'p'
 	  && dir->d_name[tamanho - 2] == 'p' && dir->d_name[tamanho - 1] == 'm' ){
-		// fprintf(stderr, "%s\n", dir->d_name);
 		return 1;
 	}
 
 	return 0;
 }
 
-
+ 
