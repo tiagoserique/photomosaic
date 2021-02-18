@@ -1,7 +1,5 @@
 #include "fotomosaico.h"
 
-#define LINESIZE 1024
-
 int main(int argc, char **argv){
 	FILE* input  						= stdin;
 	FILE* output 						= stdout;
