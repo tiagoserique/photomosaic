@@ -17,7 +17,7 @@ struct Timagem *alocaTimagem(){
 }
 
 
-struct Timagem *alocaVetorPastilhas(int qtdPastilhas){
+void *alocaVetorPastilhas(int qtdPastilhas){
 	return malloc(sizeof(struct Timagem*) * qtdPastilhas);
 }
 

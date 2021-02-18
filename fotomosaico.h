@@ -43,7 +43,7 @@ struct pixelP6 *alocaVetorImagemP6(int largura, int altura);
 
 struct Timagem *alocaTimagem();
 
-struct Timagem *alocaVetorPastilhas(int qtdPastilhas);
+void *alocaVetorPastilhas(int qtdPastilhas);
 
 void desalocaImagem(struct Timagem *imagem);
 
