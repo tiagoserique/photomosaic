@@ -26,7 +26,7 @@ int main(int argc, char **argv){
 			case 'i':
 				input = fopen(optarg, "r");
 				if (!input){
-					fprintf(stderr, "Erro ao abrir imagem principal\n");
+					fprintf(stderr, "Erro ao abrir imagem de input\n");
 					exit(1);
 				}
 			break;
@@ -47,11 +47,24 @@ int main(int argc, char **argv){
 
 			// opcao de ajuda
 			case 'h':
-				fprintf(stderr, "\n");
+				fprintf(stderr, "Este programa cria fotomosaicos a partir de\n");
+				fprintf(stderr, "uma imagem de input e um conjunto de imagens\n");
+				fprintf(stderr, "menores, chamadas de pastilhas.\n");
+				fprintf(stderr, "As imagens devem estar em formato ppm.\n");
+				
+				fprintf(stderr, "\nExemplo de uso:\n");
+				fprintf(stderr, "mosaico -i input.ppm -o output.ppm\n");
+				
+				fprintf(stderr, "\nOpcoes:\n");
 				fprintf(stderr, "Use -i para entrada em arquivo\n");
 				fprintf(stderr, "Use -o para saida em arquivo\n");
 				fprintf(stderr, "Use < para entrada em stdin\n");
 				fprintf(stderr, "Use > para saida em stdout\n");
+				fprintf(stderr, "Use -p para indicar diretorio de pastilhas\n");
+				
+				fprintf(stderr, "\n");
+				fprintf(stderr, "\n");
+
 				return 0;
 			break;
 			
@@ -79,7 +92,7 @@ int main(int argc, char **argv){
 	// muda o diretorio de executacao do programa e checa retorno
 	ret = chdir(diretorioPastilhas);
 	if (ret != 0){
-		fprintf(stderr, "Erro ao entrar no diretorio %s\n", diretorioPastilhas);
+		fprintf(stderr, "Erro ao tentar entrar no diretorio %s\n", diretorioPastilhas);
 		exit(1);
 	}
 
@@ -150,6 +163,12 @@ int main(int argc, char **argv){
 	fprintf(stderr, "Input image PPM %s, %ix%i pixels\n", imagemPrincipal->formato, 
 		imagemPrincipal->largura, imagemPrincipal->altura);
 
+
+	if (imagemPrincipal->largura < pastilhas[0]->largura 
+	|| imagemPrincipal->altura < pastilhas[0]->altura){
+		fprintf(stderr, "A imagem de input deve ser maior que as pastilhas\n");
+		exit(1);
+	}
 
 	// constroi o mosaico
 	fprintf(stderr, "Building mosaic image\n");

@@ -74,6 +74,6 @@ int qtdPastilhas);
 // calcula a distancia entre as duas imagens usando red mean
 double calculaDistancia(struct Timagem *imagem1, struct Timagem *imagem2);
 
-// substitui pastilha na imagem principal
+// substitui pastilha na imagem de input
 void substituiPastilha(struct Timagem *imagem, struct Timagem *pastilha, 
 int larguraP, int alturaP, int i, int j);

@@ -267,7 +267,7 @@ int qtdPastilhas){
 	// divide a imagem original em blocos do tamanho das pastilhas
 	for (int i = 0; i < ceil(alturaI/(double)alturaP); i++){
 		for (int j = 0; j < ceil(larguraI/(double)larguraP); j++){
-			// copia o bloco da imagem principal para a imagem auxiliar
+			// copia o bloco da imagem de input para a imagem auxiliar
 			copiaBlocoDaImagem(imagem, imagemAuxiliar, larguraP, alturaP, i, j);
 
 			// zera as medias para nao influenciar nos calculos das proximas
@@ -355,7 +355,7 @@ double calculaDistancia(struct Timagem *imagem1, struct Timagem *imagem2){
 }
 
 
-// substitui pastilha na imagem principal
+// substitui pastilha na imagem de input
 void substituiPastilha(struct Timagem *imagem, struct Timagem *pastilha, 
 int larguraP, int alturaP, int i, int j){
 	int alturaI		= imagem->altura;
