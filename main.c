@@ -9,14 +9,14 @@ int main(int argc, char **argv){
     
 	struct dirent **nomesImagem 		= NULL;
 	struct Timagem *imagemPrincipal		= NULL;
-	struct Timagem **vetPastilha		= NULL;
+	struct Timagem **pastilhas			= NULL;
 	
 	char *diretorioPastilhas			= "./tiles/";
 	char diretorioInicial[SIZE];
 	
 	int contPastilha					= 0;
 	int opcao							= 0;
-	int qtdImagens						= 0;
+	int qtdPastilhas					= 0;
 	int ret								= 0;
 	opterr 								= 0;
 
@@ -89,22 +89,24 @@ int main(int argc, char **argv){
 	// escaneia diretorio atras de imagens .ppm 
 	// e coloca os nomes em nomesImagem
 	fprintf(stderr, "Reading tiles from %s\n", diretorioPastilhas);
-	qtdImagens = scandir(".", &nomesImagem, filtro, alphasort);
-	if (qtdImagens < 0){
+	qtdPastilhas = scandir(".", &nomesImagem, filtro, alphasort);
+	if (qtdPastilhas < 0){
      	fprintf(stderr, "Nao ha imagens .ppm neste diretorio\n");
 		exit(1);
 	}
-	fprintf(stderr, "%i tiles read\n", qtdImagens);
+	fprintf(stderr, "%i tiles read\n", qtdPastilhas);
 
 
 	// aloca vetor de ponteiros para as pastilhas que serao lidas
-	vetPastilha = malloc(sizeof(struct Timagem*) * qtdImagens);
-	if (!vetPastilha){
+	pastilhas = alocaVetorPastilhas(qtdPastilhas);
+	if (!pastilhas){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
 		exit(1);
 	}
 
-	for (int i = 0; i < qtdImagens; i++, contPastilha++){
+
+	// faz leitura das pastilhas e as coloca em um vetor
+	for (int i = 0; i < qtdPastilhas; i++, contPastilha++){
 		// abre a pastilha
 		tempPastilha = fopen(nomesImagem[i]->d_name, "r");
 		if (!tempPastilha){
@@ -113,14 +115,14 @@ int main(int argc, char **argv){
 		}
 
 		// recebe ponteiro apos pastilha ser alocada 
-		vetPastilha[contPastilha] = leImagem(tempPastilha);
+		pastilhas[contPastilha] = leImagem(tempPastilha);
 		// verifica se foi retornado NULL
-		if (!vetPastilha[i])
+		if (!pastilhas[i])
 			contPastilha--;
 		
 		if (contPastilha == 0){
-			fprintf(stderr, "Tile size is %ix%i\n", vetPastilha[0]->largura, 
-					vetPastilha[0]->altura);
+			fprintf(stderr, "Tile size is %ix%i\n", pastilhas[0]->largura, 
+					pastilhas[0]->altura);
 			fprintf(stderr, "Calculating tiles' average colors\n");
 		}
 
@@ -153,22 +155,20 @@ int main(int argc, char **argv){
 
 	// constroi o mosaico
 	fprintf(stderr, "Building mosaic image\n");
+	constroiMosaico(imagemPrincipal, pastilhas, qtdPastilhas);
 	
-	
+
 	// escreve o resultado no arquivo de saida 
 	fprintf(stderr, "Writing output file\n");
 	escreveImagem(imagemPrincipal, output);
 
 
-	// 
-	for (int i = 0; i < qtdImagens; i++)
-		desalocaImagem(vetPastilha[i]);
-	free(vetPastilha);
+	for (int i = 0; i < qtdPastilhas; i++)
+		desalocaImagem(pastilhas[i]);
+	free(pastilhas);
 
 	desalocaImagem(imagemPrincipal);
 
 	fclose(output);
 	exit(0);
 }
-
-// fprintf(stderr, "cheguei aq\n"); usar pra debugar
