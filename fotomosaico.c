@@ -36,24 +36,24 @@ struct Timagem *leImagem(FILE* arq){
 	
 	// aloca memoria para os dados da imagem
 	struct Timagem *pastilha = alocaTimagem();
-	if (!pastilha){
+	if ( !pastilha ){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
 		fprintf(stderr, "Leitura dos dados da imagem nao pode ser feita\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 
 	// ignora as linhas em branco ou comentadas
 	fgets(line, SIZE, arq);
-	while(line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+	while( line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#' ){
 		fgets(line, SIZE, arq);
 	};
 
 
 	// le o formato do arquivo
 	ret = sscanf(line, "%s", pastilha->formato);
-	if (ret != 1 
-	|| (strcmp(pastilha->formato, "P3") && strcmp(pastilha->formato, "P6"))){
+	if ( ret != 1 
+	|| (strcmp(pastilha->formato, "P3") && strcmp(pastilha->formato, "P6")) ){
 		fprintf(stderr, "Formato errado: %s, diferente de P3 e P6\n", line);
 		return NULL;
 	}
@@ -61,14 +61,14 @@ struct Timagem *leImagem(FILE* arq){
 
 	// ignora as linhas em branco ou comentadas
 	fgets(line, SIZE, arq);
-	while(line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+	while( line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#' ){
 		fgets(line, SIZE, arq);
 	};
 
 
 	// le as dimensoes da imagem
 	ret = sscanf(line, "%d %d", &pastilha->largura, &pastilha->altura);
-	if (ret != 2){
+	if ( ret != 2 ){
 		printf("%d", ret);
 		fprintf(stderr, "Erro ao ler dimensoes da imagem\n");
 		fclose(arq);
@@ -78,21 +78,21 @@ struct Timagem *leImagem(FILE* arq){
 	
 	// ignora as linhas em branco ou comentadas
 	fgets(line, SIZE, arq);
-	while( line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#'){
+	while( line[0] == '\0' || !strcmp(line,"\n") || line[0] == '#' ){
 		fgets(line, SIZE, arq);
 	};
 
 
 	// le o valor maximo dos pixels
 	ret = sscanf(line, "%d", &pastilha->valorMax);
-	if (ret != 1){
+	if ( ret != 1 ){
 		fprintf(stderr, "Erro ao ler o valor maximo dos pixels\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	// se for diferente de 255, retorna um erro
-	if ( pastilha->valorMax != MAXRGB){
+	if ( pastilha->valorMax != MAXRGB ){
 		fprintf(stderr, "Valor maximo diferente de 255\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	// Aviso de possivel erro: 
@@ -104,7 +104,7 @@ struct Timagem *leImagem(FILE* arq){
 	if ( !pastilha->imagem ){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
 		fprintf(stderr, "Leitura dos pixels da imagem nao pode ser feita\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 
@@ -125,7 +125,7 @@ struct Timagem *leImagem(FILE* arq){
 		if (!temp){
 			fprintf(stderr, "Nao foi possivel alocar memoria\n");
 			fprintf(stderr, "Leitura dos pixels da imagem nao pode ser feita\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		
 		tamanho = pastilha->largura * pastilha->altura;
@@ -135,7 +135,7 @@ struct Timagem *leImagem(FILE* arq){
 		if ( ret != tamanho ){
 			fprintf(stderr, "Erro ao fazer leitura dos dados\n");
 			fprintf(stderr, "funcao fread() retornou valor diferente do esperado\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		// converte para imagem P3
@@ -199,7 +199,7 @@ void escreveImagem(struct Timagem *pastilha, FILE* output){
 		if ( ret != tamanho ){
 			fprintf(stderr, "Erro fazer escrita dos dados\n");
 			fprintf(stderr, "funcao fwrite() retornou valor diferente do esperado\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		free(temp);
@@ -259,9 +259,9 @@ int qtdPastilhas){
 	struct Timagem *imagemAuxiliar = alocaTimagem();
 	// aloca o vetor de pixels para armazenar a imagem no formato P3
 	imagemAuxiliar->imagem = alocaVetorImagemP3(larguraP, alturaP);
-	if (!imagemAuxiliar){
+	if ( !imagemAuxiliar ){
 		fprintf(stderr, "Erro ao alocar memoria para construcao do mosaico\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	// divide a imagem original em blocos do tamanho das pastilhas
@@ -286,6 +286,7 @@ int qtdPastilhas){
 			substituiPastilha(imagem, pastilhas[aMenor], larguraP, alturaP, i, j);
 		}
 	}
+
 	free(imagemAuxiliar);
 }
 
@@ -324,7 +325,7 @@ int larguraP, int alturaP, int i, int j){
 // acha a pastilha com a menor distancia da imagem
 int menorDistancia(struct Timagem *imagem, struct Timagem **pastilhas, 
 int qtdPastilhas){
-	double distancia, distanciaAnterior = NUMGRANDE;
+	double distancia, distanciaAnterior = __DBL_MAX__;
 	int menor = 0;
 
 	for (int i = 0; i < qtdPastilhas; i++){

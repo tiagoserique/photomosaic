@@ -20,23 +20,23 @@ int main(int argc, char **argv){
 
 
 	// usa getopt para filtrar as entradas do programa
-	while ((opcao = getopt(argc, argv, "i:o:p:h::")) != -1){
-		switch (opcao){
+	while ( (opcao = getopt(argc, argv, "i:o:p:h::")) != -1 ){
+		switch ( opcao ){
 			// opcao de entrada
 			case 'i':
 				input = fopen(optarg, "r");
-				if (!input){
-					fprintf(stderr, "Erro ao abrir imagem de input\n");
-					exit(1);
+				if ( !input ){
+					fprintf(stderr, "Not able to open the input image\n");
+					exit(EXIT_FAILURE);
 				}
 			break;
 			
 			// opcao de saida
 			case 'o':
 				output = fopen(optarg, "w+");
-				if (!output){
-					fprintf(stderr, "Erro ao abrir arquivo de saida\n");
-					exit(1);
+				if ( !output ){
+					fprintf(stderr, "Not able to open the output image\n");
+					exit(EXIT_FAILURE);
 				}
 			break;
 			
@@ -65,7 +65,7 @@ int main(int argc, char **argv){
 				fprintf(stderr, "\n");
 				fprintf(stderr, "\n");
 
-				return 0;
+				return EXIT_SUCCESS;
 			break;
 			
 			// caso seja digitada uma opcao diferente
@@ -91,9 +91,9 @@ int main(int argc, char **argv){
 
 	// muda o diretorio de executacao do programa e checa retorno
 	ret = chdir(diretorioPastilhas);
-	if (ret != 0){
-		fprintf(stderr, "Erro ao tentar entrar no diretorio %s\n", diretorioPastilhas);
-		exit(1);
+	if ( ret != 0 ){
+		fprintf(stderr, "Not able to change directory %s\n", diretorioPastilhas);
+		exit(EXIT_FAILURE);
 	}
 
 
@@ -101,18 +101,18 @@ int main(int argc, char **argv){
 	// e coloca os nomes em nomesImagem
 	fprintf(stderr, "Reading tiles from %s\n", diretorioPastilhas);
 	qtdPastilhas = scandir(".", &nomesImagem, filtro, alphasort);
-	if (qtdPastilhas < 0){
-     	fprintf(stderr, "Nao ha imagens .ppm neste diretorio\n");
-		exit(1);
+	if ( qtdPastilhas < 0 ){
+     	fprintf(stderr, "There's not .ppm images in this directory\n");
+		exit(EXIT_FAILURE);
 	}
 	fprintf(stderr, "%i tiles read\n", qtdPastilhas);
 
 
 	// aloca vetor de ponteiros para as pastilhas que serao lidas
 	pastilhas = alocaVetorPastilhas(qtdPastilhas);
-	if (!pastilhas){
+	if ( !pastilhas ){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 
@@ -120,18 +120,18 @@ int main(int argc, char **argv){
 	for (int i = 0; i < qtdPastilhas; i++, contPastilha++){
 		// abre a pastilha
 		tempPastilha = fopen(nomesImagem[i]->d_name, "r");
-		if (!tempPastilha){
+		if ( !tempPastilha ){
 			fprintf(stderr, "Erro ao abrir arquivo\n");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		// recebe ponteiro apos pastilha ser alocada 
 		pastilhas[contPastilha] = leImagem(tempPastilha);
 		// verifica se foi retornado NULL
-		if (!pastilhas[i])
+		if ( !pastilhas[i] )
 			contPastilha--;
 		
-		if (contPastilha == 0){
+		if ( contPastilha == 0 ){
 			fprintf(stderr, "Tile size is %ix%i\n", pastilhas[0]->largura, 
 					pastilhas[0]->altura);
 			fprintf(stderr, "Calculating tiles' average colors\n");
@@ -150,9 +150,9 @@ int main(int argc, char **argv){
 
 	// muda o diretorio de executacao do programa e checa retorno
 	ret = chdir(diretorioInicial);
-	if (ret != 0){
+	if ( ret != 0 ){
 		fprintf(stderr, "Erro ao entrar no diretorio %s\n", diretorioInicial);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 
@@ -164,10 +164,10 @@ int main(int argc, char **argv){
 		imagemPrincipal->largura, imagemPrincipal->altura);
 
 
-	if (imagemPrincipal->largura < pastilhas[0]->largura 
-	|| imagemPrincipal->altura < pastilhas[0]->altura){
+	if ( imagemPrincipal->largura < pastilhas[0]->largura 
+	|| imagemPrincipal->altura < pastilhas[0]->altura ){
 		fprintf(stderr, "A imagem de input deve ser maior que as pastilhas\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	// constroi o mosaico
@@ -187,5 +187,5 @@ int main(int argc, char **argv){
 	desalocaImagem(imagemPrincipal);
 
 	fclose(output);
-	exit(0);
+	exit(EXIT_SUCCESS);
 }

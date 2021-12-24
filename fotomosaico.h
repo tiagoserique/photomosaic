@@ -11,7 +11,6 @@
 
 #define SIZE 1024
 #define MAXRGB 255
-#define NUMGRANDE 1123581321
 
 struct pixelP3 {
 	int r;
