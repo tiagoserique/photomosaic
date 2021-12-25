@@ -1,27 +1,27 @@
-#include "fotomosaico.h"
+#include "photomosaic.h"
 
 int main(int argc, char **argv){
 	FILE* input  						= stdin;
 	FILE* output 						= stdout;
-	FILE* tempPastilha;
+	FILE* temp_tile;
     
-	struct dirent **nomesImagem 		= NULL;
-	struct Timagem *imagemPrincipal		= NULL;
-	struct Timagem **pastilhas			= NULL;
+	struct dirent **image_names 		= NULL;
+	struct Timage *mosaic_base			= NULL;
+	struct Timage **tiles				= NULL;
 	
-	char *diretorioPastilhas			= "./tiles/";
-	char diretorioInicial[SIZE];
+	char *tiles_directory				= "./tiles/";
+	char home_directory[SIZE + 1];
 	
-	int contPastilha					= 0;
-	int opcao							= 0;
-	int qtdPastilhas					= 0;
+	int tile_count						= 0;
+	int option							= 0;
+	int number_of_tiles					= 0;
 	int ret								= 0;
 	opterr 								= 0;
 
 
 	// usa getopt para filtrar as entradas do programa
-	while ( (opcao = getopt(argc, argv, "i:o:p:h::")) != -1 ){
-		switch ( opcao ){
+	while ( (option = getopt(argc, argv, "i:o:p:h::")) != -1 ){
+		switch ( option ){
 			// opcao de entrada
 			case 'i':
 				input = fopen(optarg, "r");
@@ -42,7 +42,7 @@ int main(int argc, char **argv){
 			
 			// opcao para indicar diretorio de pastilhas
 			case 'p':
-				diretorioPastilhas = optarg;
+				tiles_directory = optarg;
 				break;
 
 			// opcao de ajuda
@@ -86,105 +86,107 @@ int main(int argc, char **argv){
 
 
 	// pega o diretorio inicial em que o programa esta rodando
-	getcwd(diretorioInicial, sizeof(diretorioInicial));
+	getcwd(home_directory, sizeof(home_directory));
 
 
 	// muda o diretorio de executacao do programa e checa retorno
-	ret = chdir(diretorioPastilhas);
+	ret = chdir(tiles_directory);
 	if ( ret != 0 ){
-		fprintf(stderr, "Not able to change directory %s\n", diretorioPastilhas);
+		fprintf(stderr, "Not able to change directory %s\n", tiles_directory);
 		exit(EXIT_FAILURE);
 	}
 
 
 	// escaneia diretorio atras de imagens .ppm 
-	// e coloca os nomes em nomesImagem
-	fprintf(stderr, "Reading tiles from %s\n", diretorioPastilhas);
-	qtdPastilhas = scandir(".", &nomesImagem, filtro, alphasort);
-	if ( qtdPastilhas < 0 ){
+	// e coloca os nomes em image_names
+	fprintf(stderr, "Reading tiles from %s\n", tiles_directory);
+	number_of_tiles = scandir(".", &image_names, filter, alphasort);
+	if ( number_of_tiles < 0 ){
      	fprintf(stderr, "There's not .ppm images in this directory\n");
 		exit(EXIT_FAILURE);
 	}
-	fprintf(stderr, "%i tiles read\n", qtdPastilhas);
+	fprintf(stderr, "%i tiles read\n", number_of_tiles);
 
 
 	// aloca vetor de ponteiros para as pastilhas que serao lidas
-	pastilhas = alocaVetorPastilhas(qtdPastilhas);
-	if ( !pastilhas ){
+	tiles = tilesArrayAlloc(number_of_tiles);
+	if ( !tiles ){
 		fprintf(stderr, "Nao foi possivel alocar memoria\n");
 		exit(EXIT_FAILURE);
 	}
 
 
 	// faz leitura das pastilhas e as coloca em um vetor
-	for (int i = 0; i < qtdPastilhas; i++, contPastilha++){
+	for (int i = 0; i < number_of_tiles; i++, tile_count++){
 		// abre a pastilha
-		tempPastilha = fopen(nomesImagem[i]->d_name, "r");
-		if ( !tempPastilha ){
+		temp_tile = fopen(image_names[i]->d_name, "r");
+		if ( !temp_tile ){
 			fprintf(stderr, "Erro ao abrir arquivo\n");
 			exit(EXIT_FAILURE);
 		}
 
 		// recebe ponteiro apos pastilha ser alocada 
-		pastilhas[contPastilha] = leImagem(tempPastilha);
+		tiles[tile_count] = readImage(temp_tile);
 		// verifica se foi retornado NULL
-		if ( !pastilhas[i] )
-			contPastilha--;
+		if ( !tiles[i] )
+			tile_count--;
 		
-		if ( contPastilha == 0 ){
-			fprintf(stderr, "Tile size is %ix%i\n", pastilhas[0]->largura, 
-					pastilhas[0]->altura);
+		if ( tile_count == 0 ){
+			fprintf(stderr, "Tile size is %ix%i\n", tiles[0]->width, 
+					tiles[0]->height);
 			fprintf(stderr, "Calculating tiles' average colors\n");
 		}
 
 		// fecha a pastilha
-		fclose(tempPastilha);
+		fclose(temp_tile);
 
 		// libera memoria da string com nome do arquivo apos usado
-		free(nomesImagem[i]);
+		free(image_names[i]);
 
 	}
 	// libera memoria do vetor de strings
-	free(nomesImagem);
+	free(image_names);
  
 
 	// muda o diretorio de executacao do programa e checa retorno
-	ret = chdir(diretorioInicial);
+	ret = chdir(home_directory);
 	if ( ret != 0 ){
-		fprintf(stderr, "Erro ao entrar no diretorio %s\n", diretorioInicial);
+		fprintf(stderr, "Erro ao entrar no diretorio %s\n", home_directory);
 		exit(EXIT_FAILURE);
 	}
 
 
 	// le as propriedades da imagem de entrada
 	fprintf(stderr, "Reading input image\n");
-	imagemPrincipal = leImagem(input);
+	mosaic_base = readImage(input);
 	fclose(input);
-	fprintf(stderr, "Input image PPM %s, %ix%i pixels\n", imagemPrincipal->formato, 
-		imagemPrincipal->largura, imagemPrincipal->altura);
+	fprintf(stderr, "Input image PPM %s, %ix%i pixels\n", mosaic_base->formato, 
+		mosaic_base->width, mosaic_base->height);
 
 
-	if ( imagemPrincipal->largura < pastilhas[0]->largura 
-	|| imagemPrincipal->altura < pastilhas[0]->altura ){
+	if ( mosaic_base->width < tiles[0]->width 
+	|| mosaic_base->height < tiles[0]->height ){
 		fprintf(stderr, "A imagem de input deve ser maior que as pastilhas\n");
 		exit(EXIT_FAILURE);
 	}
 
 	// constroi o mosaico
 	fprintf(stderr, "Building mosaic image\n");
-	constroiMosaico(imagemPrincipal, pastilhas, qtdPastilhas);
+	buildMosaic(mosaic_base, tiles, number_of_tiles);
 	
 
 	// escreve o resultado no arquivo de saida 
 	fprintf(stderr, "Writing output file\n");
-	escreveImagem(imagemPrincipal, output);
+	writeImage(mosaic_base, output);
 
 
-	for (int i = 0; i < qtdPastilhas; i++)
-		desalocaImagem(pastilhas[i]);
-	free(pastilhas);
+	// libera memoria das pastilhas
+	for (int i = 0; i < number_of_tiles; i++)
+		imageDealloc(tiles[i]);
+	free(tiles);
 
-	desalocaImagem(imagemPrincipal);
+	// libera memoria da imagem principal
+	imageDealloc(mosaic_base);
 
 	fclose(output);
 	exit(EXIT_SUCCESS);

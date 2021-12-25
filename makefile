@@ -2,21 +2,21 @@
 CFLAGS = -Wall
 LIBS = -lm
 
-objects = main.o fotomosaico.o
+objects = main.o photomosaic.o
 
-all: mosaico
+all: mosaic
 
-mosaico: $(objects)
-	gcc $(objects) -o mosaico $(LIBS)
+mosaic: $(objects)
+	gcc $(objects) -o mosaic $(LIBS)
 
 main.o: main.c
 	gcc -c main.c $(CFLAGS)
 
-fotomosaico.o:	fotomosaico.c fotomosaico.h
-	gcc -c fotomosaico.c $(CFLAGS)
+photomosaic.o:	photomosaic.c photomosaic.h
+	gcc -c photomosaic.c $(CFLAGS)
 
 clean:
 	rm -f *.o
 
 purge:	clean
-	rm -f mosaico
+	rm -f mosaic
