@@ -1,3 +1,9 @@
+# CI-1002 (ERE 2)
+# Prof. Carlos Maziero
+
+# Author:
+# Tiago Serique Valadares (GRR20195138)
+
 
 CFLAGS = -Wall
 LIBS = -lm

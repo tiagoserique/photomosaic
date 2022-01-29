@@ -1,3 +1,10 @@
+/* CI-1002 (ERE 2)
+Prof. Carlos Maziero
+
+Author:
+Tiago Serique Valadares (GRR20195138)
+*/
+
 #include "photomosaic.h"
 
 int main(int argc, char **argv){
@@ -170,6 +177,7 @@ int main(int argc, char **argv){
 		exit(EXIT_FAILURE);
 	}
 
+
 	// constroi o mosaico
 	fprintf(stderr, "Building mosaic image\n");
 	buildMosaic(mosaic_base, tiles, number_of_tiles);
@@ -184,6 +192,7 @@ int main(int argc, char **argv){
 	for (int i = 0; i < number_of_tiles; i++)
 		imageDealloc(tiles[i]);
 	free(tiles);
+
 
 	// libera memoria da imagem principal
 	imageDealloc(mosaic_base);

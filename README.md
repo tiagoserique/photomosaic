@@ -1,4 +1,4 @@
-# photomosaic
+# Photomosaic Generator
 
 A photomosaic is a picture that has been divided into tiles sections, each of which is replaced with another photograph that matches the target photo, and this is what this program does, It creates a photomosaic from images in PPM format.
 
