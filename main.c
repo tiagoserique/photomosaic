@@ -8,22 +8,22 @@ Tiago Serique Valadares (GRR20195138)
 #include "photomosaic.h"
 
 int main(int argc, char **argv){
-	FILE* input  						= stdin;
-	FILE* output 						= stdout;
+	FILE* input = stdin;
+	FILE* output = stdout;
 	FILE* temp_tile;
     
-	struct dirent **image_names 		= NULL;
-	struct Timage *mosaic_base			= NULL;
-	struct Timage **tiles				= NULL;
+	struct dirent **image_names = NULL;
+	struct Timage *mosaic_base = NULL;
+	struct Timage **tiles = NULL;
 	
 	char *tiles_directory				= "./tiles/";
 	char home_directory[SIZE + 1];
 	
-	int tile_count						= 0;
-	int option							= 0;
-	int number_of_tiles					= 0;
-	int ret								= 0;
-	opterr 								= 0;
+	int tile_count = 0;
+	int option = 0;
+	int number_of_tiles = 0;
+	int ret = 0;
+	opterr = 0;
 
 
 	// usa getopt para filtrar as entradas do programa
