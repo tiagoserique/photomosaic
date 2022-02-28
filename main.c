@@ -16,7 +16,7 @@ int main(int argc, char **argv){
 	struct Timage *mosaic_base = NULL;
 	struct Timage **tiles = NULL;
 	
-	char *tiles_directory				= "./tiles/";
+	char *tiles_directory = "./tiles/";
 	char home_directory[SIZE + 1];
 	
 	int tile_count = 0;
